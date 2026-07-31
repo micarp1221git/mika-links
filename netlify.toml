@@ -1,0 +1,3 @@
+# Netlify設定（このリポを Import すればそのまま動きます・ビルド不要）
+[functions]
+  directory = "netlify/functions"
