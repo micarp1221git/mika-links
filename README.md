@@ -6,12 +6,14 @@
 ## 仕組み
 
 ```
-読者がクリック: https://<サイト名>.netlify.app/udemy
-        ↓
-Netlify Function がスプシ「転送」シートを読む（リンク共有・匿名閲覧可）
-        ↓
-udemy の行の転送先URLへ 302 リダイレクト
+/udemy       → Udemyコースのクーポンまとめページを自動生成
+               （スプシ「udemy一覧」シートから毎回作る＝いつでも最新）
+/<スラッグ>  → スプシ「転送」シートの転送先URLへ 302 リダイレクト
 ```
+
+「udemy一覧」シートは、みかさんのUdemyまとめスプシ（非公開・ウミノさん式）から
+毎日4時にGASが必要3列（コース名・クーポンリンク・サムネ）だけを自動コピーしたもの。
+元のスプシでクーポンを更新→翌朝には（すぐ反映したい日はGASのmirrorUdemyCouponsを実行→即）このページも最新になる。
 
 - 管理スプシ: https://docs.google.com/spreadsheets/d/1EY9njbOHx-ueanqZ7PfmZJtRlzxlcxRHe31nYTZWc24/edit
 - 行を足せばリンクは何個でも増やせる（スラッグ＝URLの末尾）
