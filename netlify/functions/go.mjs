@@ -1,21 +1,23 @@
 // スプレッドシート駆動のリダイレクト＋Udemyクーポンまとめページ
 // /udemy        → コース一覧ページ（udemy一覧シートから毎回生成・スプシ更新が即反映）
 // /<スラッグ>   → スプシ「転送」シートの転送先URLへ302
+// 2026-08-26: /udemy のデータ源をスプレッドシートから data/udemy-coupons.mjs に移した。
+//   旧: 案内用スプシ → GASミラー(毎日4時) → このFunctionがTSVを毎回fetch、の3段。
+//   段が多く、どこかが黙って止まっても誰も気づかず、6月のコードが2ヶ月出しっぱなしになった。
+//   新: Vault側のツールがJSONを作って push するだけ。段は1つ。
+// ⚠️ /<スラッグ> の302転送は今までどおりスプシを見ている（こちらは毎日更新するものではないため）。
+import coupons from "../../data/udemy-coupons.mjs";
+
 const SHEET = "https://docs.google.com/spreadsheets/d/1EY9njbOHx-ueanqZ7PfmZJtRlzxlcxRHe31nYTZWc24";
 const REDIRECT_TSV = SHEET + "/export?format=tsv";
-const UDEMY_TSV = SHEET + "/export?format=tsv&gid=1081204965";
 
 const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 async function udemyPage() {
-  const res = await fetch(UDEMY_TSV);
-  const rows = (await res.text()).split("\n").slice(1)
-    .map((l) => l.split("\t"))
-    .filter((c) => c[0] && c[1] && c[1].trim().startsWith("http"));
-  const cards = rows.map((c) => {
-    const name = esc(c[0].trim());
-    const link = esc(c[1].trim());
-    const thumb = c[2] && c[2].trim().startsWith("http") ? `<img src="${esc(c[2].trim())}" alt="" loading="lazy">` : "";
+  const cards = coupons.courses.map((c) => {
+    const name = esc(c.name);
+    const link = esc(c.url);
+    const thumb = c.thumb && c.thumb.startsWith("http") ? `<img src="${esc(c.thumb)}" alt="" loading="lazy">` : "";
     return `<a class="card" href="${link}" target="_blank" rel="noopener">${thumb}<div class="body"><div class="name">${name}</div><div class="cta">クーポン適用ページへ →</div></div></a>`;
   }).join("\n");
   const html = `<!DOCTYPE html><html lang="ja"><head>
