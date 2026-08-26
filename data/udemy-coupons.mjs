@@ -59,8 +59,8 @@ export default {
     {
       "course_id": 6614089,
       "name": "【習慣術×AIコーチ】ChatGPT活用「3分メソッド」で目標達成！声の日記で行動をデザインする《プロンプト付》",
-      "url": "https://www.udemy.com/course/ai-coach-3min-habit/?couponCode=2026081500",
-      "thumb": "",
+      "url": "https://www.udemy.com/course/ai-coach-3min-habit/?referralCode=8496FE37AC9C59910D6D&couponCode=2026081500",
+      "thumb": "https://img-c.udemycdn.com/course/750x422/6614089_8b48_5.jpg",
       "price": 1500,
       "coupon_code": "2026081500",
       "ends_at": "2026-09-26 18:00 PDT"
