@@ -11,12 +11,45 @@ import coupons from "../../data/udemy-coupons.mjs";
 const SHEET = "https://docs.google.com/spreadsheets/d/1EY9njbOHx-ueanqZ7PfmZJtRlzxlcxRHe31nYTZWc24";
 const REDIRECT_TSV = SHEET + "/export?format=tsv";
 
+// ── どのクーポンを見せるか、ページが開かれた瞬間に決める ───────────────
+// みかさんは「最安値1,300円」と「月次1,500円」を同時に持っていることがある。
+// 安いほうを出し、その期限が切れたら自動で次に安いものへ落ちる（再デプロイ不要）。
+// ⚠️ここをデータ生成時に決めてしまうと、期限が切れた瞬間から切れたクーポンを出し続ける。
+//   6月のコードが2ヶ月出しっぱなしだったのと同じ事故になるので、必ず表示時に判定する。
+const TZ = { PDT: "-07:00", PST: "-08:00", UTC: "+00:00", GMT: "+00:00" };
+function parseUdemyTime(s) {
+  if (!s) return null;
+  const m = String(s).match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2})(?::\d{2})?\s*([A-Z]{3})?$/);
+  if (!m) { const d = new Date(s); return isNaN(d) ? null : d; }
+  const d = new Date(`${m[1]}T${m[2]}:00${TZ[m[3]] ?? "+00:00"}`);
+  return isNaN(d) ? null : d;
+}
+// 生きているもののうち「いちばん安い、同額なら終了が遅い」を選ぶ。
+// 全部切れていたら null を返す（＝クーポンなしの素のリンクを出す。切れたコードは絶対に出さない）
+function pickCoupon(coupons, now = Date.now()) {
+  const live = (coupons || []).filter((c) => {
+    const s = parseUdemyTime(c.starts_at), e = parseUdemyTime(c.ends_at);
+    return (!s || s.getTime() <= now) && (!e || e.getTime() > now);
+  });
+  if (!live.length) return null;
+  live.sort((a, b) => a.price - b.price ||
+    ((parseUdemyTime(b.ends_at)?.getTime() ?? 0) - (parseUdemyTime(a.ends_at)?.getTime() ?? 0)));
+  return live[0];
+}
+function courseUrl(c) {
+  const picked = pickCoupon(c.coupons);
+  const q = [];
+  if (c.referral_code) q.push(`referralCode=${c.referral_code}`);
+  if (picked) q.push(`couponCode=${picked.code}`);
+  return `https://www.udemy.com/course/${c.slug}/` + (q.length ? "?" + q.join("&") : "");
+}
+
 const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 async function udemyPage() {
   const cards = coupons.courses.map((c) => {
     const name = esc(c.name);
-    const link = esc(c.url);
+    const link = esc(courseUrl(c));
     const thumb = c.thumb && c.thumb.startsWith("http") ? `<img src="${esc(c.thumb)}" alt="" loading="lazy">` : "";
     return `<a class="card" href="${link}" target="_blank" rel="noopener">${thumb}<div class="body"><div class="name">${name}</div><div class="cta">クーポン適用ページへ →</div></div></a>`;
   }).join("\n");
