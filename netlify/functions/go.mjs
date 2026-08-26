@@ -47,45 +47,108 @@ function courseUrl(c) {
 const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 async function udemyPage() {
-  const cards = coupons.courses.map((c) => {
-    const name = esc(c.name);
-    const link = esc(courseUrl(c));
-    const thumb = c.thumb && c.thumb.startsWith("http") ? `<img src="${esc(c.thumb)}" alt="" loading="lazy">` : "";
-    return `<a class="card" href="${link}" target="_blank" rel="noopener">${thumb}<div class="body"><div class="name">${name}</div><div class="cta">クーポン適用ページへ →</div></div></a>`;
-  }).join("\n");
+  const now = Date.now();
+  const items = coupons.courses.map((c) => ({ c, picked: pickCoupon(c.coupons, now) }));
+  // 割引が生きているものを上に。同じ群のなかでは終了が早い順（急ぐ理由がある順）
+  const onSale = items.filter((i) => i.picked)
+    .sort((a, b) => (parseUdemyTime(a.picked.ends_at) ?? 0) - (parseUdemyTime(b.picked.ends_at) ?? 0));
+  const rest = items.filter((i) => !i.picked);
+
+  const card = ({ c, picked }) => {
+    const until = picked ? fmtUntil(picked.ends_at) : null;
+    const soon = picked && daysLeft(picked.ends_at, now) <= 3;
+    const badge = until
+      ? `<span class="until${soon ? " soon" : ""}">${esc(until)}まで</span>`
+      : "";
+    const thumb = c.thumb && c.thumb.startsWith("http")
+      ? `<img src="${esc(c.thumb)}" alt="" loading="lazy">`
+      : `<div class="noimg"></div>`;
+    return `<a class="card" href="${esc(courseUrl(c))}" target="_blank" rel="noopener">
+<div class="thumb">${thumb}${badge}</div>
+<div class="body"><h3>${esc(c.name)}</h3><span class="go">コースを見る</span></div>
+</a>`;
+  };
+
+  const lead = onSale.length
+    ? `いま割引中は${onSale.length}本。いちばん早い期限は${esc(fmtUntil(onSale[0].picked.ends_at))}です。`
+    : `いまは割引をしていません。次のクーポンが出たら、ここに並びます。`;
+
+  const section = (title, list) => list.length
+    ? `<h2>${title}</h2><div class="grid">${list.map(card).join("\n")}</div>` : "";
+
   const html = `<!DOCTYPE html><html lang="ja"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Udemyコース 最安クーポンまとめ｜ボイストレーナーみか</title>
-<meta name="description" content="ボイストレーナーみかのUdemyコース一覧。各リンクは現在発行中の最安クーポン適用済みです。">
+<title>Udemyコース一覧｜ボイストレーナーみか</title>
+<meta name="description" content="ボイストレーナーみかのUdemyコース一覧。割引中のコースは期限つきです。">
+<meta name="robots" content="noindex">
 <style>
-:root{--coral:#E8815B;--coral-deep:#C9663F;--coral-soft:#FDEFE8;--coral-line:#F3DDD2;--bg:#FFF8F5;--ink:#3D3535;--ink-soft:#97837C}
+:root{
+  --ink:#2E2A28; --sub:#8B7D77; --line:#EFE4DE;
+  --bg:#FFFCFA; --card:#FFFFFF; --accent:#D9663D; --accent-soft:#FBEDE6;
+}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Hiragino Sans',-apple-system,sans-serif;background:var(--bg);color:var(--ink);line-height:1.8;padding:32px 16px 48px}
-.wrap{max-width:680px;margin:0 auto}
-.brand{text-align:center;font-size:12px;letter-spacing:.18em;color:var(--ink-soft);margin-bottom:20px}
-h1{font-size:20px;text-align:center;line-height:1.6;margin-bottom:10px}
-h1 span{color:var(--coral-deep)}
-.lead{text-align:center;font-size:13.5px;color:var(--ink-soft);margin-bottom:22px}
-.note{background:var(--coral-soft);border-radius:12px;padding:14px 16px;font-size:13px;margin-bottom:24px}
-.card{display:flex;flex-direction:column;background:#fff;border:1px solid var(--coral-line);border-radius:14px;overflow:hidden;text-decoration:none;color:var(--ink);margin-bottom:16px;box-shadow:0 4px 14px rgba(201,102,63,.08);transition:transform .15s ease}
-.card:hover{transform:translateY(-2px)}
-.card img{width:100%;height:auto;display:block;aspect-ratio:750/422;object-fit:cover}
-.card .body{padding:14px 16px 16px}
-.card .name{font-size:14.5px;font-weight:600;line-height:1.6;margin-bottom:8px}
-.card .cta{font-size:13px;font-weight:700;color:var(--coral-deep)}
-.footer{margin-top:30px;text-align:center;font-size:12px;color:var(--ink-soft)}
-@media(min-width:760px){.wrap{max-width:900px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card{margin-bottom:0}h1{font-size:26px}}
+body{
+  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--ink); line-height:1.75;
+  -webkit-font-smoothing:antialiased; padding:56px 20px 72px;
+}
+.wrap{max-width:1000px;margin:0 auto}
+h1{font-size:clamp(23px,4.4vw,32px);font-weight:600;letter-spacing:.01em;line-height:1.45;margin-bottom:12px}
+.lead{font-size:14.5px;color:var(--sub);margin-bottom:44px}
+h2{
+  font-size:13px;font-weight:600;letter-spacing:.09em;color:var(--sub);
+  padding-bottom:9px;border-bottom:1px solid var(--line);margin:0 0 22px;
+}
+h2+.grid{margin-bottom:46px}
+.grid{display:grid;grid-template-columns:1fr;gap:22px}
+@media(min-width:640px){.grid{grid-template-columns:1fr 1fr}}
+@media(min-width:940px){.wrap{max-width:1040px}.grid{grid-template-columns:repeat(3,1fr)}}
+.card{
+  display:flex;flex-direction:column;background:var(--card);
+  border:1px solid var(--line);border-radius:10px;overflow:hidden;
+  text-decoration:none;color:inherit;transition:border-color .18s ease, transform .18s ease;
+}
+.card:hover,.card:focus-visible{border-color:var(--accent);transform:translateY(-2px)}
+.card:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.thumb{position:relative;background:var(--accent-soft)}
+.thumb img{width:100%;height:auto;display:block;aspect-ratio:750/422;object-fit:cover}
+.noimg{width:100%;aspect-ratio:750/422}
+.until{
+  position:absolute;left:10px;bottom:10px;
+  font-family:ui-monospace,"SF Mono",Menlo,monospace;
+  font-size:11.5px;letter-spacing:.02em;
+  background:rgba(255,255,255,.94);color:var(--ink);
+  border:1px solid var(--line);border-radius:5px;padding:3px 8px;
+}
+.until.soon{background:var(--accent);border-color:var(--accent);color:#fff}
+.body{padding:15px 16px 17px;display:flex;flex-direction:column;gap:11px;flex:1}
+.body h3{font-size:14px;font-weight:600;line-height:1.65;flex:1}
+.go{font-size:12.5px;font-weight:600;color:var(--accent)}
+.foot{margin-top:52px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--sub)}
+@media (prefers-reduced-motion:reduce){.card{transition:none}.card:hover{transform:none}}
 </style></head><body><div class="wrap">
-<div class="brand">VOICE TRAINER MIKA</div>
-<h1>Udemyコース <span>最安クーポン</span>まとめ</h1>
-<p class="lead">各リンクは、いま発行中のクーポンを適用した状態で開きます。</p>
-<div class="note">クーポンは毎月更新しています。このページはいつ開いても最新のリンクです。ブックマークしてお使いください。</div>
-<div class="grid">
-${cards}
-</div>
-<div class="footer">ボイストレーナーみか</div>
+<h1>声のトレーニングを、Udemyで</h1>
+<p class="lead">${lead}</p>
+${section("割引中", onSale)}
+${section("そのほかのコース", rest)}
+<p class="foot">ボイストレーナーみか</p>
 </div></body></html>`;
   return new Response(html, { status: 200, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=300" } });
+}
+
+// 「2026-08-31 12:00 まで」を日本時間の短い表記にする
+const WD = ["日", "月", "火", "水", "木", "金", "土"];
+function fmtUntil(s) {
+  const d = parseUdemyTime(s);
+  if (!d) return "";
+  const j = new Date(d.getTime() + 9 * 3600 * 1000);
+  const hh = String(j.getUTCHours()).padStart(2, "0");
+  const mm = String(j.getUTCMinutes()).padStart(2, "0");
+  return `${j.getUTCMonth() + 1}/${j.getUTCDate()}(${WD[j.getUTCDay()]}) ${hh}:${mm}`;
+}
+function daysLeft(s, now) {
+  const d = parseUdemyTime(s);
+  return d ? (d.getTime() - now) / 86400000 : 999;
 }
 
 export default async (req) => {
