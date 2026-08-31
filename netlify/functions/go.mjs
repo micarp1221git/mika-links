@@ -193,9 +193,21 @@ const NOT_FOUND = () =>
 async function hitsPage(url) {
   const key = process.env.HITS_KEY;
   if (!key) {
+    // キーが無いときは中身を出さない。ただし「記録できているか」だけは言う。
+    // ⚠️ここを黙って503にすると、数えられていないのか鍵が無いだけなのか誰にも分からない
+    //   ＝「作った」と「動いている」の区別がつかない状態になる（2026-08-07の教訓）。
+    let stat = "記録できているかは確認できませんでした";
+    try {
+      const { blobs } = await getStore(HITS).list();
+      stat = blobs.length
+        ? `記録できています（いま ${blobs.length} 種類のリンクを記録中）`
+        : "記録の置き場は使えています（まだ1件も踏まれていません）";
+    } catch (e) { stat = "🚨 記録の置き場が使えていません: " + (e && e.message); }
     return new Response(
-      "クリックは数えています。一覧を見るには Netlify の環境変数 HITS_KEY を設定してください（設定前の分も残っています）。",
-      { status: 503, headers: { "content-type": "text/plain; charset=utf-8" } }
+      stat + "\n\n中身を見るには Netlify の環境変数 HITS_KEY に好きな文字列を入れて、\n" +
+      "https://mika-links.netlify.app/hits?k=その文字列 を開いてください。\n" +
+      "（設定前に踏まれた分も残っています）\n",
+      { status: 200, headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" } }
     );
   }
   if (url.searchParams.get("k") !== key) return NOT_FOUND();
