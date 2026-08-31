@@ -7,9 +7,43 @@
 //   新: Vault側のツールがJSONを作って push するだけ。段は1つ。
 // ⚠️ /<スラッグ> の302転送は今までどおりスプシを見ている（こちらは毎日更新するものではないため）。
 import coupons from "../../data/udemy-coupons.mjs";
+import { getStore } from "@netlify/blobs";
 
 const SHEET = "https://docs.google.com/spreadsheets/d/1EY9njbOHx-ueanqZ7PfmZJtRlzxlcxRHe31nYTZWc24";
 const REDIRECT_TSV = SHEET + "/export?format=tsv";
+
+// ── どのリンクが何回踏まれたか ────────────────────────────────
+// 媒体ごとにスラッグを分けてあるので、数えれば「どこに貼ったのが効いたか」が分かる。
+// りこさん(@riko_ai_labo)のBrain実況(2026-08-01)＝媒体別の計測リンクだけで
+// 効いている場所が判明し、そこへ追撃して伸ばした。勘ではなく数字で追撃するための土台。
+//
+// 置き場は Netlify Blobs。このFunctionの中だけで完結する。
+// ⚠️「スプシに記録」は意図して採らなかった。2026-08-26に /udemy で
+//   「案内スプシ → GASミラー(毎日4時) → Function」の3段のどこかが黙って止まり、
+//   6月のクーポンを2ヶ月出しっぱなしにした事故があったため。段を増やさない。
+// ⚠️同じスラッグが数十msの間に2回踏まれると、片方を数え落とすことがある（読んでから書くため）。
+//   この規模では無視できる差。正確さより「転送を絶対に止めない」を優先している。
+const HITS = "hits";
+const jstDay = (t = Date.now()) => new Date(t + 9 * 3600 * 1000).toISOString().slice(0, 10);
+
+async function countHit(slug) {
+  const store = getStore(HITS);
+  const cur = (await store.get(slug, { type: "json" })) || { total: 0, days: {} };
+  cur.total = (cur.total || 0) + 1;
+  cur.days = cur.days || {};
+  const d = jstDay();
+  cur.days[d] = (cur.days[d] || 0) + 1;
+  await store.setJSON(slug, cur);
+}
+
+// 計測が落ちても転送は必ず通す。0.8秒で見切る（Blobsが遅い日に人を待たせない）
+async function tally(slug) {
+  let timer;
+  try {
+    await Promise.race([countHit(slug), new Promise((r) => { timer = setTimeout(r, 800); })]);
+  } catch (e) { /* 数えられなくても転送は続ける */ }
+  clearTimeout(timer);
+}
 
 // ── どのクーポンを見せるか、ページが開かれた瞬間に決める ───────────────
 // みかさんは「最安値1,300円」と「月次1,500円」を同時に持っていることがある。
@@ -151,21 +185,98 @@ function daysLeft(s, now) {
   return d ? (d.getTime() - now) / 86400000 : 999;
 }
 
+// /hits?k=<キー>  数えたものを見るページ。キーは Netlify の環境変数 HITS_KEY。
+// キーが未設定なら見えないだけで、数えるほうは動いている（あとから設定しても過去分は残る）。
+const NOT_FOUND = () =>
+  new Response("リンクが見つかりませんでした", { status: 404, headers: { "content-type": "text/plain; charset=utf-8" } });
+
+async function hitsPage(url) {
+  const key = process.env.HITS_KEY;
+  if (!key) {
+    return new Response(
+      "クリックは数えています。一覧を見るには Netlify の環境変数 HITS_KEY を設定してください（設定前の分も残っています）。",
+      { status: 503, headers: { "content-type": "text/plain; charset=utf-8" } }
+    );
+  }
+  if (url.searchParams.get("k") !== key) return NOT_FOUND();
+
+  // 読めなかったときは黙って404にしない（何が起きたか分からなくなるため）
+  let rows = [];
+  try {
+    const store = getStore(HITS);
+    const { blobs } = await store.list();
+    for (const b of blobs) {
+      const v = await store.get(b.key, { type: "json" });
+      if (v) rows.push({ slug: b.key, total: v.total || 0, days: v.days || {} });
+    }
+  } catch (e) {
+    return new Response("記録が読めませんでした: " + (e && e.message), {
+      status: 500, headers: { "content-type": "text/plain; charset=utf-8" },
+    });
+  }
+
+  // 直近14日ぶんの日付を新しい順に
+  const today = Date.parse(jstDay() + "T00:00:00Z");
+  const cols = Array.from({ length: 14 }, (_, i) => new Date(today - i * 86400000).toISOString().slice(0, 10));
+  const sum = (r, n) => cols.slice(0, n).reduce((a, d) => a + (r.days[d] || 0), 0);
+  rows.sort((a, b) => sum(b, 7) - sum(a, 7) || b.total - a.total);
+
+  if (url.searchParams.get("format") === "tsv") {
+    const tsv = ["スラッグ\t累計\t直近7日\t直近14日", ...rows.map((r) => `${r.slug}\t${r.total}\t${sum(r, 7)}\t${sum(r, 14)}`)].join("\n");
+    return new Response(tsv, { status: 200, headers: { "content-type": "text/plain; charset=utf-8" } });
+  }
+
+  const head = cols.map((d) => `<th>${d.slice(5)}</th>`).join("");
+  const body = rows.map((r) =>
+    `<tr><td class="s">${esc(r.slug)}</td><td class="n b">${sum(r, 7)}</td><td class="n">${sum(r, 14)}</td><td class="n">${r.total}</td>` +
+    cols.map((d) => `<td class="n ${r.days[d] ? "" : "z"}">${r.days[d] || ""}</td>`).join("") + "</tr>"
+  ).join("\n");
+
+  const html = `<!DOCTYPE html><html lang="ja"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>リンクの踏まれた回数</title>
+<style>
+body{font-family:'Hiragino Sans',-apple-system,sans-serif;background:#fff;color:#3D3535;padding:24px 16px 48px;line-height:1.7}
+.wrap{max-width:1000px;margin:0 auto}
+h1{font-size:18px;margin-bottom:6px}
+p.lead{font-size:13px;color:#97837C;margin-bottom:18px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;font-size:13px;white-space:nowrap}
+th,td{border-bottom:1px solid #F3DDD2;padding:7px 10px;text-align:right}
+th{font-weight:600;color:#97837C;font-size:11.5px;position:sticky;top:0;background:#fff}
+td.s,th:first-child{text-align:left}
+td.s{font-weight:600}
+td.b{color:#C9663F;font-weight:700}
+td.z{color:#DCD2CE}
+</style></head><body><div class="wrap">
+<h1>リンクの踏まれた回数</h1>
+<p class="lead">日付は日本時間。数え始めたところからの記録です。<a href="?k=${esc(url.searchParams.get("k"))}&amp;format=tsv">TSVで見る</a></p>
+<div class="scroll"><table>
+<thead><tr><th>スラッグ</th><th>7日</th><th>14日</th><th>累計</th>${head}</tr></thead>
+<tbody>${body || `<tr><td colspan="18">まだ1件も踏まれていません。</td></tr>`}</tbody>
+</table></div>
+</div></body></html>`;
+  return new Response(html, { status: 200, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
+}
+
 export default async (req) => {
-  const slug = new URL(req.url).pathname.split("/").filter(Boolean).pop() || "";
+  const url = new URL(req.url);
+  const slug = url.pathname.split("/").filter(Boolean).pop() || "";
   if (!slug) return Response.redirect("https://voice-mika.com/", 302);
   try {
-    if (slug === "udemy") return await udemyPage();
+    if (slug === "hits") return await hitsPage(url);
+    if (slug === "udemy") { await tally("udemy"); return await udemyPage(); }
     const res = await fetch(REDIRECT_TSV, { headers: { "cache-control": "no-cache" } });
     const tsv = await res.text();
     for (const line of tsv.split("\n").slice(1)) {
       const [s, dest] = line.split("\t");
       if (s && s.trim() === slug && dest && dest.trim().startsWith("http")) {
+        await tally(slug);
         return Response.redirect(dest.trim(), 302);
       }
     }
   } catch (e) { /* スプシが読めないときは404へ */ }
-  return new Response("リンクが見つかりませんでした", { status: 404, headers: { "content-type": "text/plain; charset=utf-8" } });
+  return NOT_FOUND();
 };
 
 export const config = { path: "/*" };
