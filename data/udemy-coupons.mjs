@@ -1,6 +1,6 @@
 // 自動生成: tools/build_coupons_json.py（手で編集しない）
 export default {
-  "updated_for": "202608",
+  "updated_for": "202609",
   "courses": [
     {
       "course_id": 7237635,
@@ -10,16 +10,16 @@ export default {
       "thumb": "https://img-c.udemycdn.com/course/750x422/7237635_1bd4.jpg",
       "coupons": [
         {
-          "code": "202608MIN",
-          "price": 1300,
-          "starts_at": "2026-08-25 20:00 PDT",
-          "ends_at": "2026-08-30 20:00 PDT"
-        },
-        {
           "code": "2026081500",
           "price": 1500,
           "starts_at": "2026-08-26 18:00 PDT",
           "ends_at": "2026-09-26 18:00 PDT"
+        },
+        {
+          "code": "2026091500",
+          "price": 1500,
+          "starts_at": "2026-09-26 14:00 PDT",
+          "ends_at": "2026-10-27 14:00 PDT"
         }
       ]
     },
@@ -35,6 +35,12 @@ export default {
           "price": 1500,
           "starts_at": "2026-08-26 18:00 PDT",
           "ends_at": "2026-09-26 18:00 PDT"
+        },
+        {
+          "code": "2026091500",
+          "price": 1500,
+          "starts_at": "2026-09-26 14:00 PDT",
+          "ends_at": "2026-10-27 14:00 PDT"
         }
       ]
     },
@@ -50,6 +56,12 @@ export default {
           "price": 1500,
           "starts_at": "2026-08-26 18:00 PDT",
           "ends_at": "2026-09-26 18:00 PDT"
+        },
+        {
+          "code": "2026091500",
+          "price": 1500,
+          "starts_at": "2026-09-26 14:00 PDT",
+          "ends_at": "2026-10-27 14:00 PDT"
         }
       ]
     },
@@ -65,6 +77,12 @@ export default {
           "price": 1500,
           "starts_at": "2026-08-26 18:00 PDT",
           "ends_at": "2026-09-26 18:00 PDT"
+        },
+        {
+          "code": "2026091500",
+          "price": 1500,
+          "starts_at": "2026-09-26 14:00 PDT",
+          "ends_at": "2026-10-27 14:00 PDT"
         }
       ]
     },
@@ -80,6 +98,12 @@ export default {
           "price": 1500,
           "starts_at": "2026-08-26 18:00 PDT",
           "ends_at": "2026-09-26 18:00 PDT"
+        },
+        {
+          "code": "2026091500",
+          "price": 1500,
+          "starts_at": "2026-09-26 14:00 PDT",
+          "ends_at": "2026-10-27 14:00 PDT"
         }
       ]
     },
@@ -95,6 +119,12 @@ export default {
           "price": 1500,
           "starts_at": "2026-08-26 18:00 PDT",
           "ends_at": "2026-09-26 18:00 PDT"
+        },
+        {
+          "code": "2026091500",
+          "price": 1500,
+          "starts_at": "2026-09-26 14:00 PDT",
+          "ends_at": "2026-10-27 14:00 PDT"
         }
       ]
     },
@@ -110,6 +140,12 @@ export default {
           "price": 1500,
           "starts_at": "2026-08-26 18:00 PDT",
           "ends_at": "2026-09-26 18:00 PDT"
+        },
+        {
+          "code": "2026091500",
+          "price": 1500,
+          "starts_at": "2026-09-26 14:00 PDT",
+          "ends_at": "2026-10-27 14:00 PDT"
         }
       ]
     },
@@ -125,6 +161,12 @@ export default {
           "price": 1500,
           "starts_at": "2026-08-26 18:00 PDT",
           "ends_at": "2026-09-26 18:00 PDT"
+        },
+        {
+          "code": "2026091500",
+          "price": 1500,
+          "starts_at": "2026-09-26 14:00 PDT",
+          "ends_at": "2026-10-27 14:00 PDT"
         }
       ]
     },
@@ -140,6 +182,12 @@ export default {
           "price": 1500,
           "starts_at": "2026-08-26 18:00 PDT",
           "ends_at": "2026-09-26 18:00 PDT"
+        },
+        {
+          "code": "2026091500",
+          "price": 1500,
+          "starts_at": "2026-09-26 14:00 PDT",
+          "ends_at": "2026-10-27 14:00 PDT"
         }
       ]
     },
@@ -155,6 +203,12 @@ export default {
           "price": 1500,
           "starts_at": "2026-08-26 18:00 PDT",
           "ends_at": "2026-09-26 18:00 PDT"
+        },
+        {
+          "code": "2026091500",
+          "price": 1500,
+          "starts_at": "2026-09-26 14:00 PDT",
+          "ends_at": "2026-10-27 14:00 PDT"
         }
       ]
     }
