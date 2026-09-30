@@ -36,11 +36,26 @@ async function countHit(slug) {
   await store.setJSON(slug, cur);
 }
 
+// 2026-09-30 作業台（媒体別ダッシュボード）にも1本投げる。送るのはスラッグ・転送先の ?f=・訪問者のハッシュ（IP+UA+日）だけ。
+//   生IP・名前・メールは送らない。鍵は要らない（作業台の /api/beacon は公開の口で、受ける値を絞っている）
+const BEACON = "https://sagyoudai.micarp1221.workers.dev/api/beacon";
+async function sendBeacon(slug, dest, req) {
+  let f = "";
+  try { f = (new URL(dest).searchParams.get("f") || ""); } catch (e) {}
+  const ip = req.headers.get("x-nf-client-connection-ip") || req.headers.get("x-forwarded-for") || "";
+  const ua = req.headers.get("user-agent") || "";
+  const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`${ip}|${ua}|${jstDay()}`));
+  const v = [...new Uint8Array(h)].map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 20);
+  await fetch(BEACON, { method: "POST", headers: { "content-type": "text/plain;charset=UTF-8", "user-agent": ua.slice(0, 200) }, body: JSON.stringify({ p: "link", s: slug, f, v }) });
+}
+
 // 計測が落ちても転送は必ず通す。0.8秒で見切る（Blobsが遅い日に人を待たせない）
-async function tally(slug) {
+async function tally(slug, dest = "", req = null) {
   let timer;
   try {
-    await Promise.race([countHit(slug), new Promise((r) => { timer = setTimeout(r, 800); })]);
+    const jobs = [countHit(slug).catch(() => {})];
+    if (req) jobs.push(sendBeacon(slug, dest, req).catch(() => {}));
+    await Promise.race([Promise.all(jobs), new Promise((r) => { timer = setTimeout(r, 800); })]);
   } catch (e) { /* 数えられなくても転送は続ける */ }
   clearTimeout(timer);
 }
@@ -283,7 +298,7 @@ export default async (req) => {
     for (const line of tsv.split("\n").slice(1)) {
       const [s, dest] = line.split("\t");
       if (s && s.trim() === slug && dest && dest.trim().startsWith("http")) {
-        await tally(slug);
+        await tally(slug, dest.trim(), req);
         return Response.redirect(dest.trim(), 302);
       }
     }
