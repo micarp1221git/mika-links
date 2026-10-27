@@ -1,6 +1,6 @@
 // 自動生成: tools/build_coupons_json.py（手で編集しない）
 export default {
-  "updated_for": "202609",
+  "updated_for": "202610",
   "courses": [
     {
       "course_id": 7237635,
@@ -10,16 +10,16 @@ export default {
       "thumb": "https://img-c.udemycdn.com/course/750x422/7237635_1bd4.jpg",
       "coupons": [
         {
-          "code": "2026081500",
-          "price": 1500,
-          "starts_at": "2026-08-26 18:00 PDT",
-          "ends_at": "2026-09-26 18:00 PDT"
-        },
-        {
           "code": "2026091500",
           "price": 1500,
           "starts_at": "2026-09-26 14:00 PDT",
           "ends_at": "2026-10-27 14:00 PDT"
+        },
+        {
+          "code": "2026101500",
+          "price": 1500,
+          "starts_at": "2026-10-27 14:00 PDT",
+          "ends_at": "2026-11-27 13:00 PST"
         }
       ]
     },
@@ -31,16 +31,16 @@ export default {
       "thumb": "https://img-c.udemycdn.com/course/750x422/7144985_1103_3.jpg",
       "coupons": [
         {
-          "code": "2026081500",
-          "price": 1500,
-          "starts_at": "2026-08-26 18:00 PDT",
-          "ends_at": "2026-09-26 18:00 PDT"
-        },
-        {
           "code": "2026091500",
           "price": 1500,
           "starts_at": "2026-09-26 14:00 PDT",
           "ends_at": "2026-10-27 14:00 PDT"
+        },
+        {
+          "code": "2026101500",
+          "price": 1500,
+          "starts_at": "2026-10-27 14:00 PDT",
+          "ends_at": "2026-11-27 13:00 PST"
         }
       ]
     },
@@ -52,16 +52,16 @@ export default {
       "thumb": "https://img-c.udemycdn.com/course/750x422/7049941_ec48_2.jpg",
       "coupons": [
         {
-          "code": "2026081500",
-          "price": 1500,
-          "starts_at": "2026-08-26 18:00 PDT",
-          "ends_at": "2026-09-26 18:00 PDT"
-        },
-        {
           "code": "2026091500",
           "price": 1500,
           "starts_at": "2026-09-26 14:00 PDT",
           "ends_at": "2026-10-27 14:00 PDT"
+        },
+        {
+          "code": "2026101500",
+          "price": 1500,
+          "starts_at": "2026-10-27 14:00 PDT",
+          "ends_at": "2026-11-27 13:00 PST"
         }
       ]
     },
@@ -73,16 +73,16 @@ export default {
       "thumb": "https://img-c.udemycdn.com/course/750x422/6851847_0f90_2.jpg",
       "coupons": [
         {
-          "code": "2026081500",
-          "price": 1500,
-          "starts_at": "2026-08-26 18:00 PDT",
-          "ends_at": "2026-09-26 18:00 PDT"
-        },
-        {
           "code": "2026091500",
           "price": 1500,
           "starts_at": "2026-09-26 14:00 PDT",
           "ends_at": "2026-10-27 14:00 PDT"
+        },
+        {
+          "code": "2026101500",
+          "price": 1500,
+          "starts_at": "2026-10-27 14:00 PDT",
+          "ends_at": "2026-11-27 13:00 PST"
         }
       ]
     },
@@ -94,16 +94,16 @@ export default {
       "thumb": "https://img-c.udemycdn.com/course/750x422/6841703_01b0_5.jpg",
       "coupons": [
         {
-          "code": "2026081500",
-          "price": 1500,
-          "starts_at": "2026-08-26 18:00 PDT",
-          "ends_at": "2026-09-26 18:00 PDT"
-        },
-        {
           "code": "2026091500",
           "price": 1500,
           "starts_at": "2026-09-26 14:00 PDT",
           "ends_at": "2026-10-27 14:00 PDT"
+        },
+        {
+          "code": "2026101500",
+          "price": 1500,
+          "starts_at": "2026-10-27 14:00 PDT",
+          "ends_at": "2026-11-27 13:00 PST"
         }
       ]
     },
@@ -115,16 +115,16 @@ export default {
       "thumb": "https://img-c.udemycdn.com/course/750x422/6728889_f26a_3.jpg",
       "coupons": [
         {
-          "code": "2026081500",
-          "price": 1500,
-          "starts_at": "2026-08-26 18:00 PDT",
-          "ends_at": "2026-09-26 18:00 PDT"
-        },
-        {
           "code": "2026091500",
           "price": 1500,
           "starts_at": "2026-09-26 14:00 PDT",
           "ends_at": "2026-10-27 14:00 PDT"
+        },
+        {
+          "code": "2026101500",
+          "price": 1500,
+          "starts_at": "2026-10-27 14:00 PDT",
+          "ends_at": "2026-11-27 13:00 PST"
         }
       ]
     },
@@ -136,16 +136,16 @@ export default {
       "thumb": "https://img-c.udemycdn.com/course/750x422/6614089_8b48_5.jpg",
       "coupons": [
         {
-          "code": "2026081500",
-          "price": 1500,
-          "starts_at": "2026-08-26 18:00 PDT",
-          "ends_at": "2026-09-26 18:00 PDT"
-        },
-        {
           "code": "2026091500",
           "price": 1500,
           "starts_at": "2026-09-26 14:00 PDT",
           "ends_at": "2026-10-27 14:00 PDT"
+        },
+        {
+          "code": "2026101500",
+          "price": 1500,
+          "starts_at": "2026-10-27 14:00 PDT",
+          "ends_at": "2026-11-27 13:00 PST"
         }
       ]
     },
@@ -157,16 +157,16 @@ export default {
       "thumb": "https://img-c.udemycdn.com/course/750x422/6513803_03e7_3.jpg",
       "coupons": [
         {
-          "code": "2026081500",
-          "price": 1500,
-          "starts_at": "2026-08-26 18:00 PDT",
-          "ends_at": "2026-09-26 18:00 PDT"
-        },
-        {
           "code": "2026091500",
           "price": 1500,
           "starts_at": "2026-09-26 14:00 PDT",
           "ends_at": "2026-10-27 14:00 PDT"
+        },
+        {
+          "code": "2026101500",
+          "price": 1500,
+          "starts_at": "2026-10-27 14:00 PDT",
+          "ends_at": "2026-11-27 13:00 PST"
         }
       ]
     },
@@ -178,16 +178,16 @@ export default {
       "thumb": "https://img-c.udemycdn.com/course/750x422/6284573_961d_4.jpg",
       "coupons": [
         {
-          "code": "2026081500",
-          "price": 1500,
-          "starts_at": "2026-08-26 18:00 PDT",
-          "ends_at": "2026-09-26 18:00 PDT"
-        },
-        {
           "code": "2026091500",
           "price": 1500,
           "starts_at": "2026-09-26 14:00 PDT",
           "ends_at": "2026-10-27 14:00 PDT"
+        },
+        {
+          "code": "2026101500",
+          "price": 1500,
+          "starts_at": "2026-10-27 14:00 PDT",
+          "ends_at": "2026-11-27 13:00 PST"
         }
       ]
     },
@@ -199,16 +199,16 @@ export default {
       "thumb": "https://img-c.udemycdn.com/course/750x422/6011692_6800_5.jpg",
       "coupons": [
         {
-          "code": "2026081500",
-          "price": 1500,
-          "starts_at": "2026-08-26 18:00 PDT",
-          "ends_at": "2026-09-26 18:00 PDT"
-        },
-        {
           "code": "2026091500",
           "price": 1500,
           "starts_at": "2026-09-26 14:00 PDT",
           "ends_at": "2026-10-27 14:00 PDT"
+        },
+        {
+          "code": "2026101500",
+          "price": 1500,
+          "starts_at": "2026-10-27 14:00 PDT",
+          "ends_at": "2026-11-27 13:00 PST"
         }
       ]
     }
